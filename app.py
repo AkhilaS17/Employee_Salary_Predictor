@@ -77,31 +77,20 @@ with left_col:
     """, unsafe_allow_html=True)
 
 with right_col:
-    st.markdown("<div class='predict-box'>", unsafe_allow_html=True)
-
-    st.subheader("Predict Employee Salary")
+    st.markdown("""
+    <div class='predict-box'>
+        <h3>Predict Employee Salary</h3>
+    """, unsafe_allow_html=True)
 
     age = st.number_input("Age", 17, 90, 30)
-    education_num = st.number_input("Educational Number", 1, 16, 10)
-    capital_gain = st.number_input("Capital Gain", 0, 99999, 0)
-    capital_loss = st.number_input("Capital Loss", 0, 99999, 0)
-    hours_per_week = st.number_input("Hours per Week", 1, 100, 40)
+    edu = st.number_input("Educational Number", 1, 16, 10)
+    cgain = st.number_input("Capital Gain", 0, 99999, 0)
+    closs = st.number_input("Capital Loss", 0, 99999, 0)
+    hours = st.number_input("Hours per Week", 1, 100, 40)
 
     if st.button("Predict"):
-        try:
-            input_df = pd.DataFrame([{
-                'age': age,
-                'educational-num': education_num,
-                'capital-gain': capital_gain,
-                'capital-loss': capital_loss,
-                'hours-per-week': hours_per_week
-            }])
-            prediction = model.predict(input_df)[0]
-            result = ">50K" if prediction == 1 else "<=50K"
-
-            st.markdown(f"<div class='result-box'>Predicted Salary: {result}</div>", unsafe_allow_html=True)
-
-        except Exception as e:
-            st.error(f"Error occurred: {e}")
+        input_df = pd.DataFrame([[age, edu, cgain, closs, hours]], columns=['age', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week'])
+        prediction = model.predict(input_df)[0]
+        st.markdown(f"<div class='result-box'>Predicted Salary: {prediction}</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
