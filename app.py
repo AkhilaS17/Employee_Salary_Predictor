@@ -1,96 +1,114 @@
 import streamlit as st
+import numpy as np
 import joblib
-import pandas as pd
 
-# Set Streamlit page config
-st.set_page_config(page_title="Salary Predictor", layout="wide")
+# Load model
 
-# ---------------- CSS Section ----------------
+model = joblib.load('model/svm_salary_model.pkl')
+
+# Page config
+st.set_page_config(page_title="Employee Salary Predictor", layout="wide")
+
+# Custom CSS for dark theme and styled layout
 st.markdown("""
     <style>
-    html, body, [class*="css"] {
-        font-family: 'Segoe UI', sans-serif;
-    }
-    .main {
-        background: #e0f2f1;
-        padding: 2rem;
-    }
-    .title-box {
-        background: linear-gradient(to right, #0288d1, #26c6da);
-        padding: 20px;
-        border-radius: 20px;
-        text-align: center;
-        color: white;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-    }
-    .info-box {
-        background: linear-gradient(to right, #00c6ff, #7ee8fa);
-        padding: 25px;
-        border-radius: 20px;
-        margin-bottom: 20px;
-        box-shadow: 2px 2px 15px rgba(0,0,0,0.15);
-    }
-    .predict-box {
-        background: white;
-        padding: 25px;
-        border-radius: 20px;
-        box-shadow: 2px 2px 15px rgba(0,0,0,0.15);
-    }
-    .result-box {
-        background-color: #004d40;
-        color: white;
-        padding: 10px;
-        margin-top: 10px;
-        border-radius: 10px;
-        text-align: center;
-        font-weight: bold;
-    }
+        body {
+            background-color: #0f1117;
+            color: white;
+        }
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .reportview-container {
+            background: #0f1117;
+        }
+        h1, h2, h3, h4 {
+            color: white;
+        }
+        .stNumberInput > div {
+            background-color: #1e1e1e !important;
+            color: white !important;
+        }
+        .stTextInput > div > div > input {
+            color: white;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# ---------------- Title ----------------
-st.markdown("<div class='title-box'><h1>Employee Salary Prediction Web App</h1></div>", unsafe_allow_html=True)
-st.write("")
-
-# ---------------- Load the saved model ----------------
-model = joblib.load('model/svm_salary_model.pkl')
-
-# ---------------- Layout ----------------
-left_col, right_col = st.columns([1.5, 1])
-
-with left_col:
-    st.markdown("""
-    <div class="info-box">
-        <h3>About the Project</h3>
-        <p>This machine learning-based web application predicts whether an employee earns more than $50K per year based on five numeric features. The model is trained using a Support Vector Classifier (SVC) with feature scaling.</p>
-        <b>Model Used:</b> Support Vector Classifier (SVC) <br>
-        <b>Achieved Accuracy:</b> 84%
-        <h4>Input Field Details:</h4>
-        <ul>
-        <li><b>Age:</b> Employee’s age (e.g., 30)</li>
-        <li><b>Education Number:</b> Numeric level of education (e.g., 10 = 10th grade)</li>
-        <li><b>Capital Gain:</b> Profit made from capital assets</li>
-        <li><b>Capital Loss:</b> Loss from capital assets</li>
-        <li><b>Hours per Week:</b> Weekly work hours</li>
-        </ul>
+# Gradient Header
+st.markdown(
+    """
+    <div style='background: linear-gradient(to right, #00c6ff, #0072ff); 
+                padding: 1.5rem; 
+                border-radius: 20px; 
+                margin-bottom: 2rem; 
+                text-align: center; 
+                color: white; 
+                font-size: 40px; 
+                font-weight: bold;'>
+        Employee Salary Prediction Web App
     </div>
-    """, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-with right_col:
-    st.markdown("""
-    <div class='predict-box'>
-        <h3>Predict Employee Salary</h3>
-    """, unsafe_allow_html=True)
+# Layout columns
+left, right = st.columns([2, 1])
 
-    age = st.number_input("Age", 17, 90, 30)
-    edu = st.number_input("Educational Number", 1, 16, 10)
-    cgain = st.number_input("Capital Gain", 0, 99999, 0)
-    closs = st.number_input("Capital Loss", 0, 99999, 0)
-    hours = st.number_input("Hours per Week", 1, 100, 40)
+with left:
+    st.markdown(
+        """
+        <div style="background-color:#00c6ff; padding:1rem; border-radius:15px;">
+            <h3>About the Project</h3>
+            <p>This machine learning-based web application predicts whether an employee earns more than $50K per year based on five numeric features.</p>
+            <p>The model is trained using a <b>Support Vector Classifier (SVC)</b> with feature scaling.</p>
+            <p><b>Model Used:</b> Support Vector Classifier (SVC)</p>
+            <p><b>Achieved Accuracy:</b> 84%</p>
+            <h4>Input Field Details:</h4>
+            <ul>
+                <li><b>Age:</b> Employee’s age (e.g., 30)</li>
+                <li><b>Education Number:</b> Numeric level of education (e.g., 10 = 10th grade)</li>
+                <li><b>Capital Gain:</b> Profit made from capital assets</li>
+                <li><b>Capital Loss:</b> Loss from capital assets</li>
+                <li><b>Hours per Week:</b> Weekly work hours</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True
+    )
+
+with right:
+    st.markdown("### Predict Employee Salary")
+
+    age = st.number_input("Age", min_value=18, max_value=70, value=30)
+    education_num = st.number_input("Educational Number", min_value=1, max_value=20, value=10)
+    capital_gain = st.number_input("Capital Gain", min_value=0, max_value=99999, value=0)
+    capital_loss = st.number_input("Capital Loss", min_value=0, max_value=99999, value=0)
+    hours_per_week = st.number_input("Hours per Week", min_value=1, max_value=100, value=40)
 
     if st.button("Predict"):
-        input_df = pd.DataFrame([[age, edu, cgain, closs, hours]], columns=['age', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week'])
-        prediction = model.predict(input_df)[0]
-        st.markdown(f"<div class='result-box'>Predicted Salary: {prediction}</div>", unsafe_allow_html=True)
+        input_data = np.array([[age, education_num, capital_gain, capital_loss, hours_per_week]])
+        prediction = model.predict(input_data)[0]
+        if prediction == 1:
+            result = ">50K"
+            color = "#1b5e20"  # dark green
+        else:
+            result = "<=50K"
+            color = "#b71c1c"  # dark red
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style="
+                background-color: {color};
+                color: white;
+                padding: 15px;
+                margin-top: 20px;
+                border-radius: 10px;
+                text-align: center;
+                font-size: 20px;
+                font-weight: bold;
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            ">
+                Predicted Salary: {result}
+            </div>
+        """, unsafe_allow_html=True)
+
